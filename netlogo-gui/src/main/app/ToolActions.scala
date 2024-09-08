@@ -13,7 +13,7 @@ import org.nlogo.app.tools.{ LibrariesDialog, Preferences, PreferencesDialog }
 import org.nlogo.awt.Positioning
 import org.nlogo.core.I18N
 import org.nlogo.workspace.AbstractWorkspaceScala
-import org.nlogo.window.{ ColorDialog, LinkRoot }
+import org.nlogo.window.{ LinkRoot, RGBColorDialog }
 import org.nlogo.shape.ShapesManagerInterface
 import org.nlogo.swing.UserAction._
 
@@ -64,19 +64,19 @@ class OpenLibrariesDialog( frame:              Frame
 }
 
 class OpenColorDialog(frame: Frame)
-extends ShowDialogAction(I18N.gui.get("menu.tools.colorSwatches"))
+extends ShowDialogAction(I18N.gui.get("menu.tools.colorPicker"))
 with MenuAction {
   category = ToolsCategory
   group = ToolsDialogsGroup
 
-  def createDialog() = new ColorDialog(frame, false)
+  def createDialog() = new RGBColorDialog(frame, false)
 
   var hasShown = false
 
   override def actionPerformed(e: ActionEvent) {
     Positioning.center(createdDialog, frame)
     if (!hasShown) {
-      createdDialog.asInstanceOf[ColorDialog].showDialog()
+      createdDialog.asInstanceOf[RGBColorDialog].showDialog()
       hasShown = true
     } else
       super.actionPerformed(e)
