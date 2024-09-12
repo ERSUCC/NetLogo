@@ -2,62 +2,42 @@
 
 package org.nlogo.app
 
-import java.awt.{ Component, Frame }
+import java.awt.Frame
 import java.awt.event.ActionEvent
 import java.net.URI
-import java.nio.file.Path
 import javax.swing.{ Action, AbstractAction }
 
 import org.nlogo.core.I18N
 import org.nlogo.api.Version
-import org.nlogo.swing.{ BrowserLauncher, UserAction },
+import org.nlogo.swing.{ BrowserLauncher, EmbeddedBrowser, UserAction },
   BrowserLauncher.docPath,
   UserAction._
 
-class LocalBrowseAction(name: String, path: Path)
+class BrowseAction(frame: Frame, name: String, title: String, uri: URI)
 extends AbstractAction(name)
 with MenuAction {
   category = HelpCategory
   group    = HelpWebGroup
 
-  override def actionPerformed(e: ActionEvent): Unit = {
-    val launchComponent = e.getSource match {
-      case c: Component => c
-      case _ => null
-    }
-    BrowserLauncher.openPath(launchComponent, path, "")
-  }
-}
-
-class RemoteBrowseAction(name: String, uri: URI)
-extends AbstractAction(name)
-with MenuAction {
-  category = HelpCategory
-  group    = HelpWebGroup
-
-  override def actionPerformed(e: ActionEvent): Unit = {
-    val launchComponent = e.getSource match {
-      case c: Component => c
-      case _ => null
-    }
-    BrowserLauncher.openURI(launchComponent, uri)
+  override def actionPerformed(e: ActionEvent) {
+    new EmbeddedBrowser(frame, title, uri).setVisible(true)
   }
 }
 
 object HelpActions {
-  def apply: Seq[Action] = {
+  def apply(frame: Frame): Seq[Action] = {
     Seq(
-    new LocalBrowseAction(I18N.gui.get("menu.help.netLogoUserManual"),
-      docPath("index.html")),
-    new LocalBrowseAction(I18N.gui.get("menu.help.netLogoDictionary"),
-      docPath("index2.html")),
-    new RemoteBrowseAction(I18N.gui.get("menu.help.bind"),
+    new BrowseAction(frame, I18N.gui.get("menu.help.netLogoUserManual"), I18N.gui.get("menu.help.netLogoUserManual"),
+      docPath("index.html").toUri),
+    new BrowseAction(frame, I18N.gui.get("menu.help.netLogoDictionary"), I18N.gui.get("menu.help.netLogoDictionary"),
+      docPath("index2.html").toUri),
+    new BrowseAction(frame, I18N.gui.get("menu.help.bind"), I18N.gui.get("menu.help.bind"),
       new URI("https://ccl.northwestern.edu/netlogo/bind")),
-    new RemoteBrowseAction(I18N.gui.get("menu.help.netLogoUsersGroup"),
+    new BrowseAction(frame, I18N.gui.get("menu.help.netLogoUsersGroup"), I18N.gui.get("menu.help.netLogoUsersGroup"),
       new URI("http://groups.google.com/d/forum/netlogo-users")),
-    new RemoteBrowseAction(I18N.gui.get("menu.help.introToABM"),
+    new BrowseAction(frame, I18N.gui.get("menu.help.introToABM"), I18N.gui.get("menu.help.introToABM"),
       new URI("https://mitpress.mit.edu/books/introduction-agent-based-modeling")),
-    new RemoteBrowseAction(I18N.gui.get("menu.help.donate"),
+    new BrowseAction(frame, I18N.gui.get("menu.help.donate"), I18N.gui.get("menu.help.donate"),
       new URI("http://ccl.northwestern.edu/netlogo/giving.shtml")) {
       putValue(ActionGroupKey, HelpAboutGroup)
     })

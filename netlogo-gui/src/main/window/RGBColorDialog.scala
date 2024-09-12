@@ -28,7 +28,7 @@ class RGBColorDialog(frame: Frame, modal: Boolean) extends JDialog(frame, I18N.g
   val bridge = new Bridge
 
   setSize(600, 400)
-  setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+  setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE)
 
   val panel = new JFXPanel
 

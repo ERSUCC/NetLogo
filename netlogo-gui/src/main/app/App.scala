@@ -667,7 +667,7 @@ class App extends
       FindDialog.FIND_ACTION,
       FindDialog.FIND_NEXT_ACTION
     ) ++
-    HelpActions.apply ++
+    HelpActions.apply(frame) ++
     FileActions(workspace, menuBar.fileMenu) ++
     workspaceActions ++
     labManager.actions ++
