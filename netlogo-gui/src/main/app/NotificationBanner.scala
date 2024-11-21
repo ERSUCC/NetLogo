@@ -6,9 +6,9 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 
 import java.awt.{BorderLayout, Dimension, Graphics}
-import java.awt.event.{ActionEvent, ActionListener, MouseAdapter, MouseEvent}
+import java.awt.event.{ MouseAdapter, MouseEvent}
 import java.util.prefs.Preferences
-import javax.swing.{JButton, JEditorPane, JLabel, JOptionPane, JPanel, JScrollPane, SwingConstants}
+import javax.swing.{ JEditorPane, JLabel, JOptionPane, JPanel, JScrollPane, SwingConstants}
 
 import org.nlogo.app.infotab.InfoFormatter
 import org.nlogo.core.I18N
@@ -26,37 +26,31 @@ case class JsonObject(eventId: Int, date: String, title: String, fullText: Strin
 class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   private var jsonObjectList: List[JsonObject] = List() // Initialize here first
   private val jsonUrl = "https://ccl.northwestern.edu/netlogo/announce-test.json"
-  // Fetch and populate jsonObjectList in the constructor
+
   jsonObjectList = parseJsonToList(fetchJsonFromUrl())
   private var scrollPane = new JScrollPane()
-
-  private val initialMessage = getJsonObjectHead.getOrElse("")
-  lazy val lastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
+  private lazy val lastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
   private var editorPane: JEditorPane = new JEditorPane()
   // Label to display notification messages
-  private val messageLabel = new JLabel(" " + initialMessage + "   -  " + I18N.gui.get("dialog.interface.viewMore"))
-  // Close button with an "X" icon
-  private val closeButton = new JButton("\u2716") // Unicode character for "X"
+  private val messageLabel = new JLabel(" " +  getJsonObjectHead.getOrElse("") + "   -  " + I18N.gui.get("dialog.interface.viewMore"))
+  private val closeButton = new CloseButton()
+  closeButton.setPreferredSize(new Dimension(50, 50))
   setVisible(isShowNeeded()) // Set visibility based on isShowNeeded
-  // Initialize the NotificationBanner panel and set layout and appearance
-  setLayout(new BorderLayout())
-  setPreferredSize(new Dimension(400, 50))
+  setPreferredSize(new Dimension(super.getPreferredSize.width, 40))
 
   // Customize the message label
   messageLabel.setHorizontalAlignment(SwingConstants.LEFT)
   add(messageLabel, BorderLayout.CENTER)
 
   // Configure the close button
-  closeButton.setBorderPainted(false)
-  closeButton.setContentAreaFilled(false)
-  closeButton.setFocusPainted(false)
-  //TODO this action needs to get called on the okay button click.
-  closeButton.addActionListener(new ActionListener {
-    override def actionPerformed(e: ActionEvent): Unit = {
-      setVisible(false) // Hide the banner when the close button is pressed
+  closeButton.addMouseListener(new MouseAdapter {
+    override def mouseClicked(e: MouseEvent): Unit = {
+      if (e.getButton == MouseEvent.BUTTON1) {
+        setVisible(false) // Hide the banner when the close button is pressed
+      }
     }
   })
-  add(closeButton, BorderLayout.EAST)
+  add(closeButton, BorderLayout.EAST) // Add close button to the EAST
 
   // Add a mouse listener to call showJsonInDialog when the banner is clicked
   addMouseListener(new MouseAdapter {
@@ -79,7 +73,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     closeButton.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
     scrollPane.getHorizontalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
     scrollPane.getVerticalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
-
   }
 
   // Method to fetch JSON content from a URL
@@ -134,7 +127,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
 
       if (!jsonContent.trim.isEmpty) {
           editorPane = new JEditorPane {
-            self =>
 
             setDragEnabled(false)
             setEditable(false)
