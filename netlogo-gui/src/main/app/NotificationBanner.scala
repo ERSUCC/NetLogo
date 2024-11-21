@@ -5,11 +5,10 @@ package org.nlogo.app
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 
-import java.awt.{BorderLayout, Dimension, Graphics}
+import java.awt.{BorderLayout, Dimension, Graphics, GridBagConstraints, GridBagLayout, Insets}
 import java.awt.event.{ MouseAdapter, MouseEvent}
 import java.util.prefs.Preferences
 import javax.swing.{ JEditorPane, JLabel, JOptionPane, JPanel, JScrollPane, SwingConstants}
-
 import org.nlogo.app.infotab.InfoFormatter
 import org.nlogo.core.I18N
 import org.nlogo.swing.{HoverDecoration, OptionDialog}
@@ -19,7 +18,6 @@ import org.json.simple.parser.JSONParser
 import org.json.simple.{JSONArray, JSONObject}
 
 import scala.io.Source
-
 
 case class JsonObject(eventId: Int, date: String, title: String, fullText: String)
 
@@ -38,9 +36,33 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   setVisible(isShowNeeded()) // Set visibility based on isShowNeeded
   setPreferredSize(new Dimension(super.getPreferredSize.width, 40))
 
+  // Use GridBagLayout for finer control
+  setLayout(new GridBagLayout())
+
+  // Configure constraints for messageLabel
+  val labelConstraints = new GridBagConstraints()
+  labelConstraints.gridx = 0 // Column 0
+  labelConstraints.gridy = 0 // Row 0
+  labelConstraints.weightx = 1.0 // Take as much horizontal space as possible
+  labelConstraints.fill = GridBagConstraints.HORIZONTAL // Stretch horizontally
+  labelConstraints.anchor = GridBagConstraints.WEST // Align to the left
+  labelConstraints.insets = new Insets(0, 5, 0, 5) // Add some padding
+
+  add(messageLabel, labelConstraints)
+
+  // Configure constraints for closeButton
+  val buttonConstraints = new GridBagConstraints()
+  buttonConstraints.gridx = 1 // Column 1
+  buttonConstraints.gridy = 0 // Same row as messageLabel
+  buttonConstraints.weightx = 0.0 // Do not take extra horizontal space
+  buttonConstraints.anchor = GridBagConstraints.EAST // Align to the right
+  buttonConstraints.fill = GridBagConstraints.NONE // Keep default size
+  buttonConstraints.insets = new Insets(0, 5, 0, 5) // Add some padding
+
   // Customize the message label
   messageLabel.setHorizontalAlignment(SwingConstants.LEFT)
-  add(messageLabel, BorderLayout.CENTER)
+
+  add(closeButton, buttonConstraints)
 
   // Configure the close button
   closeButton.addMouseListener(new MouseAdapter {
@@ -50,7 +72,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
       }
     }
   })
-  add(closeButton, BorderLayout.EAST) // Add close button to the EAST
 
   // Add a mouse listener to call showJsonInDialog when the banner is clicked
   addMouseListener(new MouseAdapter {
