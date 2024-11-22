@@ -22,50 +22,48 @@ import scala.io.Source
 case class JsonObject(eventId: Int, date: String, title: String, fullText: String)
 
 class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
-  private var jsonObjectList: List[JsonObject] = List() // Initialize here first
-  private val jsonUrl = "https://ccl.northwestern.edu/netlogo/announce-test.json"
+  private var JsonObjectList: List[JsonObject] = List()
+  private val JsonUrl = "https://ccl.northwestern.edu/netlogo/announce-test.json"
 
-  jsonObjectList = parseJsonToList(fetchJsonFromUrl())
-  private var scrollPane = new JScrollPane()
-  private lazy val lastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
-  private var editorPane: JEditorPane = new JEditorPane()
+  JsonObjectList = parseJsonToList(fetchJsonFromUrl())
+  private var ScrollPane = new JScrollPane()
+  private val LastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
+  private var EditorPane: JEditorPane = new JEditorPane()
   // Label to display notification messages
-  private val messageLabel = new JLabel(" " +  getJsonObjectHead.getOrElse("") + "   -  " + I18N.gui.get("dialog.interface.viewMore"))
-  private val closeButton = new CloseButton()
-  closeButton.setPreferredSize(new Dimension(50, 50))
-  setVisible(isShowNeeded()) // Set visibility based on isShowNeeded
+  private val MessageLabel = new JLabel(" " +  getJsonObjectHead.getOrElse("") + "   -  " + I18N.gui.get("dialog.interface.viewMore"))
+  private val CloseButton = new CloseButton()
+  CloseButton.setPreferredSize(new Dimension(50, 50))
+  setVisible(isShowNeeded())
   setPreferredSize(new Dimension(super.getPreferredSize.width, 40))
 
-  // Use GridBagLayout for finer control
   setLayout(new GridBagLayout())
 
-  // Configure constraints for messageLabel
-  val labelConstraints = new GridBagConstraints()
-  labelConstraints.gridx = 0 // Column 0
-  labelConstraints.gridy = 0 // Row 0
-  labelConstraints.weightx = 1.0 // Take as much horizontal space as possible
-  labelConstraints.fill = GridBagConstraints.HORIZONTAL // Stretch horizontally
-  labelConstraints.anchor = GridBagConstraints.WEST // Align to the left
-  labelConstraints.insets = new Insets(0, 5, 0, 5) // Add some padding
+  // Configure constraints for MessageLabel
+  val LabelConstraints = new GridBagConstraints()
+  LabelConstraints.gridx = 0
+  LabelConstraints.gridy = 0
+  LabelConstraints.weightx = 1.0 // Take as much horizontal space as possible
+  LabelConstraints.fill = GridBagConstraints.HORIZONTAL
+  LabelConstraints.anchor = GridBagConstraints.WEST
+  LabelConstraints.insets = new Insets(0, 5, 0, 5)
 
-  add(messageLabel, labelConstraints)
+  add(MessageLabel, LabelConstraints)
 
-  // Configure constraints for closeButton
-  val buttonConstraints = new GridBagConstraints()
-  buttonConstraints.gridx = 1 // Column 1
-  buttonConstraints.gridy = 0 // Same row as messageLabel
-  buttonConstraints.weightx = 0.0 // Do not take extra horizontal space
-  buttonConstraints.anchor = GridBagConstraints.EAST // Align to the right
-  buttonConstraints.fill = GridBagConstraints.NONE // Keep default size
-  buttonConstraints.insets = new Insets(0, 5, 0, 5) // Add some padding
+  // Configure constraints for CloseButton
+  val ButtonConstraints = new GridBagConstraints()
+  ButtonConstraints.gridx = 1
+  ButtonConstraints.gridy = 0 // Same row as MessageLabel
+  ButtonConstraints.weightx = 0.0 // Do not take extra horizontal space
+  ButtonConstraints.anchor = GridBagConstraints.EAST
+  ButtonConstraints.fill = GridBagConstraints.NONE
+  ButtonConstraints.insets = new Insets(0, 5, 0, 5)
 
-  // Customize the message label
-  messageLabel.setHorizontalAlignment(SwingConstants.LEFT)
 
-  add(closeButton, buttonConstraints)
+  MessageLabel.setHorizontalAlignment(SwingConstants.LEFT)
 
-  // Configure the close button
-  closeButton.addMouseListener(new MouseAdapter {
+  add(CloseButton, ButtonConstraints)
+
+  CloseButton.addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
       if (e.getButton == MouseEvent.BUTTON1) {
         setVisible(false) // Hide the banner when the close button is pressed
@@ -73,10 +71,10 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     }
   })
 
-  // Add a mouse listener to call showJsonInDialog when the banner is clicked
+
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
-      showJsonInDialog() // Call the method on click
+      showJsonInDialog()
     }
   })
 
@@ -90,22 +88,22 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   }
   def syncTheme(): Unit = {
     setBackground(InterfaceColors.ANNOUNCEMENTS_BANNER_BACKGROUND)
-    messageLabel.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
-    closeButton.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
-    scrollPane.getHorizontalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
-    scrollPane.getVerticalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
+    MessageLabel.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
+    CloseButton.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
+    ScrollPane.getHorizontalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
+    ScrollPane.getVerticalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
   }
 
   // Method to fetch JSON content from a URL
   private def fetchJsonFromUrl(): String = {
     try {
-      val source = Source.fromURL(jsonUrl)
+      val source = Source.fromURL(JsonUrl)
       val content = source.mkString
       source.close()
       content
     } catch {
       case e: Exception =>
-      ""
+        ""
     }
   }
 
@@ -115,66 +113,65 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
       return Nil
     }
 
-      val parser = new JSONParser()
-      val jsonArray = parser.parse(jsonContent).asInstanceOf[JSONArray]
-      jsonArray.toArray.flatMap { obj =>
-        val jsonObject = obj.asInstanceOf[JSONObject]
-        Option(jsonObject.get("event-id").asInstanceOf[Long].toInt).map { eventId =>
-          val title = Option(jsonObject.get("title")).map(_.toString).getOrElse("")
-          val fullText = Option(jsonObject.get("fullText")).map(_.toString).getOrElse("")
-          val date = Option(jsonObject.get("date")).map(_.toString).getOrElse("")
-          JsonObject(eventId, date, title, fullText)
-        }
-      }.toList.sortBy(_.eventId)(Ordering[Int].reverse)
+    val parser = new JSONParser()
+    val jsonArray = parser.parse(jsonContent).asInstanceOf[JSONArray]
+    jsonArray.toArray.flatMap { obj =>
+      val jsonObject = obj.asInstanceOf[JSONObject]
+      Option(jsonObject.get("event-id").asInstanceOf[Long].toInt).map { eventId =>
+        val title = Option(jsonObject.get("title")).map(_.toString).getOrElse("")
+        val fullText = Option(jsonObject.get("fullText")).map(_.toString).getOrElse("")
+        val date = Option(jsonObject.get("date")).map(_.toString).getOrElse("")
+        JsonObject(eventId, date, title, fullText)
+      }
+    }.toList.sortBy(_.eventId)(Ordering[Int].reverse)
 
   }
 
   // Method to show JSON content in a dialog
   private def showJsonInDialog(): Unit = {
 
-    val prefs = Preferences.userNodeForPackage(getClass)
+    val prefs = Preferences.userRoot.node("/org/nlogo/NetLogo")
     try {
       val jsonContent = fetchJsonFromUrl()
-      jsonObjectList = parseJsonToList(jsonContent) // Populate the class variable
-      val formattedString = formatJsonObjectList(jsonObjectList)
+      val formattedString = formatJsonObjectList(JsonObjectList)
       if(!isShowNeeded()){
         return
       }
-      val lastSeenEventId = prefs.getInt(lastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
-      if(jsonObjectList.head.eventId <= lastSeenEventId){
+      val lastSeenEventId = prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
+      if(JsonObjectList.head.eventId <= lastSeenEventId){
         return
       }
       val html = InfoFormatter.toInnerHtml(formattedString)
 
       if (!jsonContent.trim.isEmpty) {
-          editorPane = new JEditorPane {
+        EditorPane = new JEditorPane {
 
-            setDragEnabled(false)
-            setEditable(false)
-            setContentType("text/html")
-            setOpaque(true)
-            setBackground(InterfaceColors.CODE_BACKGROUND) // Set the background color)
-            setForeground(InterfaceColors.DEFAULT_COLOR) //Set the font color
-            setText(html)
-            setCaretPosition(0)
-          }
+          setDragEnabled(false)
+          setEditable(false)
+          setContentType("text/html")
+          setOpaque(true)
+          setBackground(InterfaceColors.CODE_BACKGROUND)
+          setForeground(InterfaceColors.DEFAULT_COLOR) //Set the font color
+          setText(html)
+          setCaretPosition(0)
+        }
 
-          scrollPane = new JScrollPane(editorPane)
-          scrollPane.setPreferredSize(new Dimension(500, 400))
-          val panel = new JPanel(new BorderLayout())
-          panel.add(scrollPane, BorderLayout.CENTER)
-          val options: Array[AnyRef] = Array(I18N.gui.get("common.buttons.ok"))
+        ScrollPane = new JScrollPane(EditorPane)
+        ScrollPane.setPreferredSize(new Dimension(500, 400))
+        val panel = new JPanel(new BorderLayout())
+        panel.add(ScrollPane, BorderLayout.CENTER)
+        val options: Array[AnyRef] = Array(I18N.gui.get("common.buttons.ok"))
 
-          val result = JOptionPane.showOptionDialog(
-            null, panel, I18N.gui.get("dialog.interface.newsNotificationTitle"),
-            JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options(0)
-          )
+        val result = JOptionPane.showOptionDialog(
+          null, panel, I18N.gui.get("dialog.interface.newsNotificationTitle"),
+          JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options(0)
+        )
 
-          // Check if OK was clicked (index 0 in options array) and hide the NotificationBanner
-          if (result == 0) {
-            setVisible(false) // Hide NotificationBanner
-            prefs.putInt("lastSeenEventId", jsonObjectList.head.eventId)
-          }
+        // Check if OK was clicked (index 0 in options array) and hide the NotificationBanner
+        if (result == 0) {
+          setVisible(false) // Hide NotificationBanner
+          prefs.putInt("lastSeenEventId", JsonObjectList.head.eventId)
+        }
       }
     } catch {
       case e: Exception =>{
@@ -182,7 +179,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
       }
     }
   }
-
 
   // Lazily initialize the Markdown parser and renderer (can be reused for multiple calls)
   private lazy val markdownParser = Parser.builder().build()
@@ -200,27 +196,25 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   }
 
   private def getJsonObjectHead: Option[String] = {
-      val jsonContent = fetchJsonFromUrl()
-      jsonObjectList = parseJsonToList(jsonContent)
+    val jsonContent = fetchJsonFromUrl()
+    JsonObjectList = parseJsonToList(jsonContent)
 
-    // Return the title of the first item if jsonObjectList is not null and has elements
-    jsonObjectList match {
+    // Return the title of the first item if JsonObjectList is not null and has elements
+    JsonObjectList match {
       case Nil =>
-        println("jsonObjectList is empty or Nil; hiding NotificationBanner.")
+        println("JsonObjectList is empty or Nil; hiding NotificationBanner.")
         this.setVisible(false) // Hide the NotificationBanner panel
-        None // Return None if jsonObjectList is null or empty
+        None
       case list =>
-        this.setVisible(true) // Ensure the NotificationBanner is visible
-        list.headOption.map(_.title) // Return the title of the head element if available
+        this.setVisible(true)
+        list.headOption.map(_.title)
     }
   }
 
   private def isShowNeeded(): Boolean = {
-    val prefs = Preferences.userNodeForPackage(getClass)
-    val jsonContent = fetchJsonFromUrl()
-    jsonObjectList = parseJsonToList(jsonContent) // Populate the class variable
-    val lastSeenEventId = prefs.getInt(lastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
-    //return true if jsonObjectList is non-empty and eventId of the first element is> lastSeenEventId; otherwise return false
-    jsonObjectList.nonEmpty && jsonObjectList.head.eventId > lastSeenEventId
+    val Prefs = Preferences.userRoot.node("/org/nlogo/NetLogo")
+    val LastSeenEventId = Prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
+    //return true if JsonObjectList is non-empty and eventId of the first element is> lastSeenEventId; otherwise return false
+    JsonObjectList.nonEmpty && JsonObjectList.head.eventId > LastSeenEventId
   }
 }
