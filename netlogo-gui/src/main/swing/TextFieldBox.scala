@@ -3,7 +3,7 @@
 package org.nlogo.swing
 
 import java.awt.{ Component, Dimension, Font }
-import javax.swing.{ Box, BoxLayout, JComponent, JDialog, JLabel, JPanel, JTextField, SwingConstants }
+import javax.swing.{ Box, BoxLayout, JComponent, JDialog, JLabel, JPanel, SwingConstants }
 
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 
@@ -14,9 +14,9 @@ object TextFieldBox {
   def main(argv: List[String]) {
     val fb = new TextFieldBox(SwingConstants.LEFT)
 
-    fb.addField("Name:", new JTextField(20))
-    fb.addField("Server location or IP address:", new JTextField(8))
-    fb.addField("Port:", new JTextField(20))
+    fb.addField("Name:", new TextField(20))
+    fb.addField("Server location or IP address:", new TextField(8))
+    fb.addField("Port:", new TextField(20))
 
     fb.add(Box.createGlue())
 
@@ -35,7 +35,7 @@ object TextFieldBox {
  * nicely alligned.
  */
 class TextFieldBox(labelAlignment: Int = SwingConstants.LEFT, labelFont: Font = null, fieldFont: Font = null)
-  extends JPanel with ThemeSync {
+  extends JPanel with Transparent with ThemeSync {
 
   private var maxLabelWidth = 0
   private var labels: List[JLabel] = Nil

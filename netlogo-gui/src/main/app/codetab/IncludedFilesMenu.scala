@@ -6,14 +6,15 @@ import java.awt.{ Dimension, FileDialog }
 import java.awt.event.ActionEvent
 import java.io.File
 import java.util.prefs.Preferences
-import javax.swing.{ AbstractAction, JOptionPane, JPopupMenu }
+import javax.swing.AbstractAction
 
 import scala.util.control.Exception.ignoring
 
 import org.nlogo.app.common.{ Actions, TabsInterface }, Actions.Ellipsis
 import org.nlogo.awt.UserCancelException
 import org.nlogo.core.I18N
-import org.nlogo.swing.{ FileDialog => SwingFileDialog, PopupMenuItem, RoundedBorderPanel, ToolBarMenu }
+import org.nlogo.swing.{ FileDialog => SwingFileDialog, MenuItem, OptionPane, PopupMenu, RoundedBorderPanel,
+                         ToolBarMenu }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.nlogo.window.{ Events => WindowEvents }
 
@@ -39,29 +40,28 @@ with WindowEvents.CompiledEvent.Handler with RoundedBorderPanel with ThemeSync {
     super.doLayout()
   }
 
-  override def populate(menu: JPopupMenu) = {
-    menu.setBackground(InterfaceColors.MENU_BACKGROUND)
+  override def populate(menu: PopupMenu) = {
     includesTable match {
       case Some(includePaths) =>
         val filtered =
           includePaths.keys.toSeq.filter(include => include.endsWith(".nls") && new File(includePaths(include)).exists)
         
         if (filtered.isEmpty)
-          menu.add(new PopupMenuItem(I18N.gui.get("common.menus.empty"))).setEnabled(false)
+          menu.add(new MenuItem(I18N.gui.get("common.menus.empty"))).setEnabled(false)
 
         else {
-          filtered.sortBy(_.toUpperCase).foreach(include => menu.add(new PopupMenuItem(new AbstractAction(include) {
+          filtered.sortBy(_.toUpperCase).foreach(include => menu.add(new MenuItem(new AbstractAction(include) {
             def actionPerformed(e: ActionEvent) {
               tabs.openExternalFile(includePaths(include))
             }
           })))
         }
       case None =>
-        menu.add(new PopupMenuItem(I18N.gui.get("common.menus.empty"))).setEnabled(false)
+        menu.add(new MenuItem(I18N.gui.get("common.menus.empty"))).setEnabled(false)
     }
     menu.addSeparator()
-    menu.add(new PopupMenuItem(NewSourceEditorAction))
-    menu.add(new PopupMenuItem(OpenSourceEditorAction))
+    menu.add(new MenuItem(NewSourceEditorAction))
+    menu.add(new MenuItem(OpenSourceEditorAction))
   }
 
   private def sizeIfVisible(size: => Dimension) = if (alwaysVisible || !isEmpty) size else new Dimension(0,0)
@@ -88,7 +88,8 @@ with WindowEvents.CompiledEvent.Handler with RoundedBorderPanel with ThemeSync {
       if(path.endsWith(".nls"))
         tabs.openExternalFile(path)
       else
-        JOptionPane.showMessageDialog(IncludedFilesMenu.this, I18N.gui.get("file.open.error.external.suffix"))
+        new OptionPane(IncludedFilesMenu.this, "", I18N.gui.get("file.open.error.external.suffix"),
+                       OptionPane.Options.OK, OptionPane.Icons.ERROR)
     }
   }
 }

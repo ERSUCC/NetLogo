@@ -3,15 +3,14 @@
 package org.nlogo.app.tools
 
 import java.awt.{ BorderLayout, FlowLayout, Frame }
-import java.awt.event.ActionEvent
 import java.io.File
 import java.nio.file.Path
-import javax.swing.{ AbstractAction, JLabel, JOptionPane, JPanel }
+import javax.swing.{ JLabel, JPanel }
 import javax.swing.border.EmptyBorder
 
 import org.nlogo.api.{ FileIO, LibraryInfoDownloader, LibraryManager }
 import org.nlogo.core.I18N
-import org.nlogo.swing.{ Button, ProgressListener, SwingWorker }
+import org.nlogo.swing.{ Button, ProgressListener, OptionPane, SwingWorker, Transparent }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 
 class LibrariesDialog( parent:          Frame
@@ -27,18 +26,13 @@ class LibrariesDialog( parent:          Frame
   private lazy val tab             = new LibrariesTab("extensions", manager, status.setText, recompile, updateSource, extPathMappings)
   private lazy val bottomPanel     = new JPanel(new BorderLayout)
   private lazy val status          = new JLabel
-  private lazy val buttonPanel     = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)) {
-    setOpaque(false)
-    setBackground(InterfaceColors.TRANSPARENT)
-  }
-  private lazy val libPathsButton  = new Button(new AbstractAction(I18N.gui("showLibPaths")) {
-    def actionPerformed(e: ActionEvent) {
-      val mappingsStr = extPathMappings.map { case (k, v) => s"  * $k: $v" }.toSeq.sorted.mkString("\n")
-      val msg = s"""${I18N.gui("libPathsExplanation")}
-                    |
-                    |$mappingsStr""".stripMargin
-      JOptionPane.showMessageDialog(LibrariesDialog.this, msg, I18N.gui("showLibPaths"), JOptionPane.PLAIN_MESSAGE)
-    }
+  private lazy val buttonPanel     = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)) with Transparent
+  private lazy val libPathsButton  = new Button(I18N.gui("showLibPaths"), () => {
+    val mappingsStr = extPathMappings.map { case (k, v) => s"  * $k: $v" }.toSeq.sorted.mkString("\n")
+    val msg = s"""${I18N.gui("libPathsExplanation")}
+                  |
+                  |$mappingsStr""".stripMargin
+    new OptionPane(LibrariesDialog.this, I18N.gui("showLibPaths"), msg, OptionPane.Options.OK)
   })
   private lazy val updateAllButton = new Button(tab.updateAllAction)
 

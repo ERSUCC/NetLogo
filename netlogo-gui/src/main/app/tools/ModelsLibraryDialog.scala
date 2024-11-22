@@ -14,8 +14,7 @@ import java.nio.file.Paths
 import java.net.URI
 import java.util.{ Enumeration, LinkedList, List => JList }
 import javax.swing.{ AbstractAction, Action, Box, BorderFactory, BoxLayout, InputMap, JComponent, JDialog, JEditorPane,
-                     JLabel, JOptionPane, JPanel, JScrollPane, JTextField, JTree, KeyStroke, SwingUtilities,
-                     WindowConstants }
+                     JLabel, JPanel, JTree, KeyStroke, SwingUtilities, WindowConstants }
 import javax.swing.text.{ BadLocationException, DefaultHighlighter }
 import javax.swing.tree.{ DefaultMutableTreeNode, DefaultTreeCellRenderer, DefaultTreeModel, TreePath,
                           TreeSelectionModel }
@@ -26,7 +25,8 @@ import javax.swing.event.{ AncestorEvent, AncestorListener, DocumentEvent, Docum
 import org.nlogo.core.I18N
 import org.nlogo.api.FileIO
 import org.nlogo.awt.{ Positioning, UserCancelException }
-import org.nlogo.swing.{ BrowserLauncher, Button, ModalProgressTask, Utils }, Utils.addEscKeyAction
+import org.nlogo.swing.{ BrowserLauncher, Button, ModalProgressTask, OptionPane, ScrollPane, TextField, Utils },
+  Utils.addEscKeyAction
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.nlogo.workspace.ModelsLibrary
 
@@ -163,11 +163,13 @@ class ModelsLibraryDialog(parent: Frame, node: Node)
   private var selected = Option.empty[Node]
   private var sourceURI = Option.empty[URI]
   private val savedExpandedPaths: JList[TreePath] = new LinkedList[TreePath]()
-  private val searchField: JTextField = new JTextField("")
+  private val searchField = new TextField
   private var searchText = Option.empty[String]
   private val searchIcon = new JLabel
 
   private val modelPreviewPanel: ModelPreviewPanel = new ModelPreviewPanel()
+
+  private val modelPreviewScrollPane = new ScrollPane(modelPreviewPanel)
 
   private val tree = new JTree(new SearchableModelTree(node)) with ThemeSync {
     private val renderer = new DefaultTreeCellRenderer with ThemeSync {
@@ -189,6 +191,8 @@ class ModelsLibraryDialog(parent: Frame, node: Node)
   }
 
   tree.setSelectionRow(0)
+
+  private val treeScrollPane = new ScrollPane(tree)
 
   private val contentPane = new JPanel
 
@@ -248,10 +252,8 @@ class ModelsLibraryDialog(parent: Frame, node: Node)
   private val selectButton = new Button(openAction)
   private val cancelButton = new Button(cancelAction)
 
-  private val clearSearchButton = new Button(new AbstractAction(I18N.gui.get("modelsLibrary.clear")) {
-    def actionPerformed(e: ActionEvent) {
-      searchField.setText("")
-    }
+  private val clearSearchButton = new Button(I18N.gui.get("modelsLibrary.clear"), () => {
+    searchField.setText("")
   })
 
   locally {
@@ -342,11 +344,11 @@ class ModelsLibraryDialog(parent: Frame, node: Node)
     searchPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2))
 
     val treePanel = new Box(BoxLayout.Y_AXIS)
-    treePanel.add(new JScrollPane(tree))
+    treePanel.add(treeScrollPane)
     treePanel.add(searchPanel)
 
     topPanel.add(treePanel)
-    topPanel.add(new JScrollPane(modelPreviewPanel))
+    topPanel.add(modelPreviewScrollPane)
 
     val buttonPanel = new Box(BoxLayout.X_AXIS)
     buttonPanel.add(Box.createRigidArea(new Dimension(40, 0)))
@@ -633,8 +635,9 @@ class ModelsLibraryDialog(parent: Frame, node: Node)
       if (e.getEventType == HyperlinkEvent.EventType.ACTIVATED) {
         Option(e.getURL)
           .flatMap(u => Try(u.toURI).toOption) match {
-            // TODO: Convert to I18N
-            case None => JOptionPane.showMessageDialog(this, "Invalid URL!", "Error", JOptionPane.ERROR_MESSAGE);
+            case None => new OptionPane(this, I18N.gui.get("common.messages.error"),
+                                        I18N.gui.get("modelsLibrary.invalidURL"), OptionPane.Options.OK,
+                                        OptionPane.Icons.ERROR)
             case Some(toOpen) => BrowserLauncher.openURI(this, toOpen)
           }
       }
@@ -718,13 +721,12 @@ class ModelsLibraryDialog(parent: Frame, node: Node)
 
   def syncTheme() {
     contentPane.setBackground(InterfaceColors.DIALOG_BACKGROUND)
+    modelPreviewScrollPane.setBackground(InterfaceColors.DIALOG_BACKGROUND)
+    treeScrollPane.setBackground(InterfaceColors.DIALOG_BACKGROUND)
 
-    tree.syncTheme()
     modelPreviewPanel.syncTheme()
-
-    searchField.setBackground(InterfaceColors.DIALOG_BACKGROUND)
-    searchField.setForeground(InterfaceColors.DIALOG_TEXT)
-    searchField.setCaretColor(InterfaceColors.DIALOG_TEXT)
+    tree.syncTheme()
+    searchField.syncTheme()
 
     searchIcon.setIcon(Utils.iconScaledWithColor("/images/find.png", 15, 15, InterfaceColors.TOOLBAR_IMAGE))
 

@@ -4,7 +4,7 @@ package org.nlogo.window
 
 import java.awt.{ Dimension, Graphics, Point, RadialGradientPaint }
 import java.awt.event.{ ActionEvent, ActionListener, FocusAdapter, FocusEvent, MouseAdapter, MouseEvent,
-                        MouseMotionAdapter }
+                        MouseMotionAdapter, MouseWheelEvent, MouseWheelListener }
 import java.lang.NumberFormatException
 import javax.swing.{ BorderFactory, JLabel, JSlider, JTextField, SwingConstants }
 import javax.swing.event.{ ChangeEvent, ChangeListener }
@@ -14,7 +14,7 @@ import javax.swing.text.{ AttributeSet, PlainDocument }
 import org.nlogo.agent.SliderConstraint
 import org.nlogo.api.{ CompilerServices, Dump, Editable, MersenneTwisterFast }
 import org.nlogo.core.{ Horizontal, I18N, Slider => CoreSlider, Vertical }
-import org.nlogo.swing.Utils
+import org.nlogo.swing.{ Transparent, Utils }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.nlogo.window.Events.{ InterfaceGlobalEvent, AfterLoadEvent, PeriodicUpdateEvent, AddSliderConstraintEvent,
                                  InputBoxLoseFocusEvent }
@@ -158,9 +158,8 @@ trait AbstractSliderWidget extends MultiErrorWidget with ThemeSync {
     }
   }
 
-  protected class TextField extends JTextField("50", 3) {
+  protected class TextField extends JTextField("50", 3) with Transparent {
     setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0))
-    setBackground(InterfaceColors.TRANSPARENT)
     setFont(getFont.deriveFont(11f))
     setHorizontalAlignment(SwingConstants.RIGHT)
 
@@ -244,7 +243,13 @@ trait AbstractSliderWidget extends MultiErrorWidget with ThemeSync {
   val nameComponent = new Label(I18N.gui.get("edit.slider.previewName"))
   val valueComponent = new TextField
   val unitsComponent = new Label("")
-  var slider = new JSlider(0, ((maximum - minimum) / increment).toInt, 50)
+  var slider = new JSlider(0, ((maximum - minimum) / increment).toInt, 50) {
+    addMouseWheelListener(new MouseWheelListener {
+      def mouseWheelMoved(e: MouseWheelEvent) {
+        value = minimum.max(value - increment * e.getWheelRotation).min(effectiveMaximum)
+      }
+    })
+  }
 
   slider.setUI(new SliderUI(slider))
 
@@ -472,7 +477,7 @@ trait AbstractSliderWidget extends MultiErrorWidget with ThemeSync {
     }
   }
 
-  override def syncTheme() {
+  def syncTheme() {
     setBackgroundColor(InterfaceColors.SLIDER_BACKGROUND)
 
     valueComponent.setForeground(InterfaceColors.DISPLAY_AREA_TEXT)

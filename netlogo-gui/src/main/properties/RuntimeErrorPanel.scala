@@ -10,8 +10,8 @@ import javax.swing.{ JButton, JLabel, JPanel }
 
 import org.nlogo.swing.Utils
 
-abstract class RuntimeErrorDisplay(accessor: PropertyAccessor[Option[Exception]], useTooltip: Boolean)
-  extends PropertyEditor(accessor, useTooltip, handlesOwnErrors = true) with RuntimeErrorDisplayer {
+abstract class RuntimeErrorDisplay(accessor: PropertyAccessor[Option[Exception]])
+  extends PropertyEditor(accessor, handlesOwnErrors = true) with RuntimeErrorDisplayer {
     private var dismissed = false
     layoutErrorPanel()
 
@@ -49,6 +49,10 @@ abstract class RuntimeErrorDisplay(accessor: PropertyAccessor[Option[Exception]]
       c.weighty = 0
       c.gridheight = if (dismissed) 0 else 1
       c
+    }
+
+    def syncTheme() {
+      // do later
     }
   }
 

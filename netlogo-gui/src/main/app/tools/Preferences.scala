@@ -7,13 +7,12 @@ import java.awt.event.ActionEvent
 import java.io.File
 import java.util.Locale
 import java.util.prefs.{ Preferences => JavaPreferences }
-import javax.swing.{ AbstractAction, JButton, JComboBox, JFileChooser, JPanel, JTextField }
-import javax.swing.border.EmptyBorder
+import javax.swing.{ AbstractAction, JFileChooser, JPanel }
 
 import org.nlogo.app.common.TabsInterface
 import org.nlogo.core.I18N
-import org.nlogo.swing.{ CheckBox, RoundedBorderPanel }
-import org.nlogo.theme.{ InterfaceColors, ThemeSync }
+import org.nlogo.swing.{ Button, CheckBox, ComboBox, TextField, Transparent }
+import org.nlogo.theme.ThemeSync
 
 object Preferences {
   abstract class BooleanPreference(val i18nKey: String, val requirement: String, default: Boolean) extends Preference {
@@ -30,13 +29,7 @@ object Preferences {
   }
 
   abstract class StringPreference(val i18nKey: String, val requirement: String, default: String) extends Preference {
-    val component = new JTextField(default, 20) with ThemeSync {
-      def syncTheme() {
-        setBackground(InterfaceColors.DIALOG_BACKGROUND)
-        setForeground(InterfaceColors.DIALOG_TEXT)
-        setCaretColor(InterfaceColors.DIALOG_TEXT)
-      }
-    }
+    val component = new TextField(default, 20)
 
     def load(prefs: JavaPreferences) = {
       val value = prefs.get(i18nKey, default)
@@ -56,7 +49,7 @@ object Preferences {
     val languages = I18N.availableLocales map (LocaleWrapper(_)) sortBy (_.toString)
 
     val i18nKey = "uiLanguage"
-    val component = new JComboBox(languages) with ThemeSync { def syncTheme() {} }
+    val component = new ComboBox(languages.toList)
     val requirement = "restartRequired"
 
     def load(prefs: JavaPreferences) = {
@@ -110,8 +103,24 @@ object Preferences {
   class LogDirectory(val frame: Frame) extends Preference {
     val i18nKey         = "logDirectory"
     val requirement = "restartRequired"
-    val textField       = new JTextField("", 20)
-    val component       = createComponent()
+    val textField       = new TextField(20)
+    val component =
+      new JPanel with Transparent with ThemeSync {
+        add(textField)
+
+        private val browseButton = new Button(new AbstractAction("Browse...") {
+          def actionPerformed(e: ActionEvent) {
+            askForConfigFile(textField.getText).foreach(textField.setText)
+          }
+        })
+
+        add(browseButton)
+
+        def syncTheme() {
+          textField.syncTheme()
+          browseButton.syncTheme()
+        }
+      }
 
     def load(prefs: JavaPreferences) = {
       val logDirectory = prefs.get("logDirectory", "")
@@ -120,38 +129,6 @@ object Preferences {
 
     def save(prefs: JavaPreferences) = {
       prefs.put("logDirectory", textField.getText)
-    }
-
-    def createComponent(): JPanel with ThemeSync = {
-      new JPanel with ThemeSync {
-        setOpaque(false)
-        setBackground(InterfaceColors.TRANSPARENT)
-
-        add(textField)
-
-        private val browseButton = new JButton(new AbstractAction("Browse...") {
-          def actionPerformed(e: ActionEvent) {
-            askForConfigFile(textField.getText).foreach(textField.setText)
-          }
-        }) with RoundedBorderPanel {
-          setBorder(new EmptyBorder(3, 12, 3, 12))
-          setDiameter(6)
-          enableHover()
-        }
-
-        add(browseButton)
-
-        def syncTheme() {
-          textField.setBackground(InterfaceColors.DIALOG_BACKGROUND)
-          textField.setForeground(InterfaceColors.DIALOG_TEXT)
-          textField.setCaretColor(InterfaceColors.DIALOG_TEXT)
-
-          browseButton.setBackgroundColor(InterfaceColors.TOOLBAR_CONTROL_BACKGROUND)
-          browseButton.setBackgroundHoverColor(InterfaceColors.TOOLBAR_CONTROL_BACKGROUND_HOVER)
-          browseButton.setBorderColor(InterfaceColors.TOOLBAR_CONTROL_BORDER)
-          browseButton.setForeground(InterfaceColors.TOOLBAR_TEXT)
-        }
-      }
     }
 
     def askForConfigFile(current: String): Option[String] = {
@@ -177,12 +154,12 @@ object Preferences {
   object ProceduresMenuSortOrder extends Preference {
     val i18nKey = "proceduresMenuSortOrder"
 
-    val options = Array(
+    val options = List(
       I18N.gui.get("tools.preferences.proceduresSortByOrderOfAppearance"),
       I18N.gui.get("tools.preferences.proceduresSortAlphabetical")
     )
 
-    val component = new JComboBox(options) with ThemeSync { def syncTheme() {} }
+    val component = new ComboBox(options)
     val requirement = ""
 
     def load(prefs: JavaPreferences) = {

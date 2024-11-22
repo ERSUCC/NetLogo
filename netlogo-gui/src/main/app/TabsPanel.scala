@@ -130,7 +130,6 @@ private class TabsPanelUI(tabsPanel: TabsPanel) extends BasicTabbedPaneUI {
 }
 
 class TabLabel(text: String, tab: Component) extends JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0)) {
-
   private var tabsPanel: TabsPanel = null
 
   def setTabsPanel(tabsPanel: TabsPanel) {

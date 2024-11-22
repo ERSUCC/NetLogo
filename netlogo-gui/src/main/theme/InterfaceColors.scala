@@ -255,7 +255,6 @@ object InterfaceColors {
       case "dark" => DARK_GRAY
     }
 
-
   def ANNOUNCEMENTS_BANNER_BACKGROUND_HOVER =
     theme match {
       case "classic" => CLASSIC_LIGHT_GREEN_2
@@ -269,6 +268,11 @@ object InterfaceColors {
       case "dark" => Color.WHITE
     }
 
+  def VIEW_BORDER =
+    theme match {
+      case "classic" | "light" => TRANSPARENT
+      case "dark" => LIGHT_GRAY_OUTLINE
+    }
 
   def MONITOR_BACKGROUND =
     theme match {
@@ -316,10 +320,6 @@ object InterfaceColors {
       case "classic" | "light" => MEDIUM_GRAY
       case "dark" => LIGHT_GRAY_OUTLINE
     }
-
-  def AGENT_EDITOR_BACKGROUND = LIGHT_GRAY
-
-  def AGENT_COMMANDER_BACKGROUND = LIGHT_GRAY
 
   def TOOLBAR_BACKGROUND =
     theme match {
@@ -465,6 +465,8 @@ object InterfaceColors {
       case "dark" => DARK_BLUE_GRAY
     }
   
+  def MENU_BORDER = MEDIUM_GRAY
+  
   def MENU_TEXT_HOVER =
     theme match {
       case "classic" | "light" => Color.WHITE
@@ -518,6 +520,38 @@ object InterfaceColors {
       case "classic" | "light" => MEDIUM_GRAY
       case "dark" => LIGHT_GRAY_OUTLINE
     }
+  
+  def TEXT_AREA_BACKGROUND =
+    theme match {
+      case "classic" | "light" => Color.WHITE
+      case "dark" => DARK_BLUE_GRAY
+    }
+  
+  def TEXT_AREA_TEXT =
+    theme match {
+      case "classic" | "light" => Color.BLACK
+      case "dark" => Color.WHITE
+    }
+  
+  def TEXT_AREA_BORDER_EDITABLE =
+    theme match {
+      case "classic" | "light" => MEDIUM_GRAY
+      case "dark" => LIGHT_GRAY_2
+    }
+  
+  def TEXT_AREA_BORDER_NONEDITABLE =
+    theme match {
+      case "classic" | "light" => LIGHT_GRAY
+      case "dark" => LIGHT_GRAY_OUTLINE
+    }
+  
+  def BSPACE_HINT_BACKGROUND = new Color(128, 200, 128, 64)
+
+  def INFO_ICON = new Color(50, 150, 200)
+
+  def WARNING_ICON = new Color(220, 170, 50)
+
+  def ERROR_ICON = new Color(220, 50, 50)
   
   // Syntax highlighting colors
 

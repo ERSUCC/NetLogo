@@ -8,7 +8,7 @@ import java.util.prefs.{ Preferences => JavaPreferences }
 import javax.swing.{ AbstractAction, ButtonGroup, JPanel }
 
 import org.nlogo.core.I18N
-import org.nlogo.swing.{ Button, RadioButton }
+import org.nlogo.swing.{ Button, RadioButton, Transparent }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 
 class ThemesDialog(frame: Frame with ThemeSync) extends ToolDialog(frame, "themes") with ThemeSync {
@@ -34,19 +34,15 @@ class ThemesDialog(frame: Frame with ThemeSync) extends ToolDialog(frame, "theme
     }
   })
 
-  private lazy val okButton = new Button(new AbstractAction(I18N.gui.get("common.buttons.ok")) {
-    def actionPerformed(e: ActionEvent) {
-      setVisible(false)
-    }
+  private lazy val okButton = new Button(I18N.gui.get("common.buttons.ok"), () => {
+    setVisible(false)
   })
 
-  private lazy val cancelButton = new Button(new AbstractAction(I18N.gui.get("common.buttons.cancel")) {
-    def actionPerformed(e: ActionEvent) {
-      setTheme(startTheme)
-      setSelected(startTheme)
+  private lazy val cancelButton = new Button(I18N.gui.get("common.buttons.cancel"), () => {
+    setTheme(startTheme)
+    setSelected(startTheme)
 
-      setVisible(false)
-    }
+    setVisible(false)
   })
 
   private var startTheme = ""
@@ -73,10 +69,7 @@ class ThemesDialog(frame: Frame with ThemeSync) extends ToolDialog(frame, "theme
     themeButtons.add(lightButton)
     themeButtons.add(darkButton)
 
-    val buttonPanel = new JPanel {
-      setOpaque(false)
-      setBackground(InterfaceColors.TRANSPARENT)
-    }
+    val buttonPanel = new JPanel with Transparent
 
     buttonPanel.add(okButton)
     buttonPanel.add(cancelButton)

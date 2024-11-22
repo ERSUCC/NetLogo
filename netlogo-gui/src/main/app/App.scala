@@ -6,7 +6,7 @@ import java.awt.{ Dimension, Frame, Toolkit, BorderLayout}
 import java.awt.event.ActionEvent
 import java.io.File
 import java.util.prefs.Preferences
-import javax.swing.{ JFrame, JOptionPane, JMenu }
+import javax.swing.{ JFrame, JMenu }
 
 import org.nlogo.agent.{ Agent, World2D, World3D }
 import org.nlogo.api._
@@ -22,8 +22,8 @@ import org.nlogo.fileformat
 import org.nlogo.log.{ JsonFileLogger, LogEvents, LogManager }
 import org.nlogo.nvm.{ PresentationCompilerInterface, Workspace }
 import org.nlogo.shape.{ LinkShapesManagerInterface, ShapesManagerInterface, TurtleShapesManagerInterface }
-import org.nlogo.swing.{ OptionDialog, SetSystemLookAndFeel }
-import org.nlogo.theme.InterfaceColors
+import org.nlogo.swing.{ DropdownOptionPane, InputOptionPane, OptionPane, SetSystemLookAndFeel }
+import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.nlogo.util.{ NullAppHandler, Pico }
 import org.nlogo.window._
 import org.nlogo.window.Events._
@@ -447,9 +447,8 @@ class App extends
       val addListener       = (l) => listenerManager.addListener(l)
       val loggerFactory     = (p) => new JsonFileLogger(p)
       LogManager.start(addListener, loggerFactory, finalLogDirectory, events, studentName, () =>
-        OptionDialog.showMessage(frame, I18N.gui.get("common.messages.warning"),
-                                 I18N.gui.get("error.dialog.logDirectory"),
-                                 Array[Object](I18N.gui.get("common.buttons.ok"))))
+        new OptionPane(frame, I18N.gui.get("common.messages.warning"), I18N.gui.get("error.dialog.logDirectory"),
+                       OptionPane.Options.OK, OptionPane.Icons.WARNING))
     }
 
   }
@@ -624,9 +623,9 @@ class App extends
       catch {
         case ex: java.net.ConnectException =>
           fileManager.newModel()
-          JOptionPane.showConfirmDialog(null,
-            I18N.gui.getN("file.open.error.unloadable.message", commandLineURL),
-            I18N.gui.get("file.open.error.unloadable.title"), JOptionPane.DEFAULT_OPTION)
+          new OptionPane(null, I18N.gui.get("file.open.error.unloadable.title"),
+                         I18N.gui.getN("file.open.error.unloadable.message", commandLineURL),
+                         OptionPane.Options.OK_CANCEL, OptionPane.Icons.WARNING)
       }
 
     } else if (prefs.get("loadLastOnStartup", "false").toBoolean) {
@@ -661,6 +660,8 @@ class App extends
 
   lazy val openColorDialog = new OpenColorDialog(frame)
 
+  lazy val openRGBAColorDialog = new OpenRGBAColorDialog(frame)
+
   lazy val openLibrariesDialog = {
     val updateSource =
       (transform: (String) => String) =>
@@ -681,6 +682,7 @@ class App extends
       showThemesDialog,
       openLibrariesDialog,
       openColorDialog,
+      openRGBAColorDialog,
       new ShowShapeManager("turtleShapesEditor", turtleShapesManager),
       new ShowShapeManager("linkShapesEditor",   linkShapesManager),
       new ShowSystemDynamicsModeler(aggregateManager),
@@ -749,9 +751,11 @@ class App extends
       val fullName =
         if (matches.size == 1) matches(0)
         else {
-          val options = matches.map(_.replaceAllLiterally(".nlogo3d", "").replaceAllLiterally(".nlogo", "")).toArray[AnyRef]
-          val i = org.nlogo.swing.OptionDialog.showAsList(frame, I18N.gui.get("tools.magicModelMatcher"), I18N.gui.get("tools.magicModelMathcer.mustChoose"), options)
-          if (i != -1) matches(i) else null
+          new DropdownOptionPane(frame, I18N.gui.get("tools.magicModelMatcher"),
+                                 I18N.gui.get("tools.magicModelMathcer.mustChoose"),
+                                 matches.map(_.replaceAllLiterally(".nlogo3d", "")
+                                              .replaceAllLiterally(".nlogo", "")).toList)
+            .getSelectedChoice
         }
       if (fullName != null) {
         org.nlogo.workspace.ModelsLibrary.getModelPath(fullName).foreach { path =>
@@ -796,10 +800,35 @@ class App extends
     workspace.glView.syncTheme()
     workspace.glView.repaint()
 
+    monitorManager.syncTheme()
+
+    _turtleShapesManager match {
+      case ts: ThemeSync => ts.syncTheme()
+    }
+
+    _linkShapesManager match {
+      case ts: ThemeSync => ts.syncTheme()
+    }
+
+    labManager.syncTheme()
+
     openPreferencesDialog.syncTheme()
     showThemesDialog.syncTheme()
+    openAboutDialog.syncTheme()
     openColorDialog.syncTheme()
+    openRGBAColorDialog.syncTheme()
     openLibrariesDialog.syncTheme()
+
+    workspace.hubNetManager match {
+      case Some(manager: ThemeSync) => manager.syncTheme()
+      case _ =>
+    }
+
+    aggregateManager match {
+      case ts: ThemeSync => ts.syncTheme()
+    }
+
+    errorDialogManager.syncTheme()
   }
 
   /**
@@ -844,6 +873,7 @@ class App extends
     if (AbstractWorkspace.isApp)
       setWindowTitles()
     workspace.hubNetManager.foreach(_.closeClientEditor())
+    errorDialogManager.closeAllDialogs()
   }
 
   private var wasAtPreferredSizeBeforeLoadBegan = false
@@ -999,9 +1029,8 @@ class App extends
     } catch {
       case ex: UserCancelException => org.nlogo.api.Exceptions.ignore(ex)
       case ex: java.io.IOException =>
-        javax.swing.JOptionPane.showMessageDialog(
-          frame, ex.getMessage,
-          I18N.gui.get("common.messages.error"), javax.swing.JOptionPane.ERROR_MESSAGE)
+        new OptionPane(frame, I18N.gui.get("common.messages.error"), ex.getMessage, OptionPane.Options.OK,
+                       OptionPane.Icons.ERROR)
     }
   }
 
@@ -1265,7 +1294,7 @@ class App extends
     val frame = new JFrame()
     frame.setAlwaysOnTop(true)
     val prompt = I18N.gui.get("tools.loggingMode.enterName")
-    val name   = JOptionPane.showInputDialog(frame, prompt, "", JOptionPane.QUESTION_MESSAGE, null, null, "")
+    val name   = new InputOptionPane(frame, "", prompt).getInput
     if (name == null) { "unknown" } else { name.toString.trim() }
   }
 

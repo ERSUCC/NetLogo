@@ -3,7 +3,8 @@
 package org.nlogo.swing
 
 import java.awt.{ Component, Graphics }
-import javax.swing.{ Action, Icon, JCheckBox }
+import java.awt.event.ActionEvent
+import javax.swing.{ AbstractAction, Action, Icon, JCheckBox }
 
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 
@@ -14,6 +15,16 @@ class CheckBox(text: String = "") extends JCheckBox(text) with HoverDecoration w
     setAction(action)
   }
 
+  def this(text: String, function: () => Unit) = {
+    this(text)
+
+    setAction(new AbstractAction(text) {
+      def actionPerformed(e: ActionEvent) {
+        function()
+      }
+    })
+  }
+
   setIcon(new Icon {
     def getIconWidth: Int = 14
     def getIconHeight: Int = 14
@@ -22,7 +33,7 @@ class CheckBox(text: String = "") extends JCheckBox(text) with HoverDecoration w
       val g2d = Utils.initGraphics2D(g)
 
       if (isSelected) {
-        if (isHover)
+        if (isHover && isEnabled)
           g2d.setColor(InterfaceColors.CHECKBOX_BACKGROUND_SELECTED_HOVER)
         else
           g2d.setColor(InterfaceColors.CHECKBOX_BACKGROUND_SELECTED)
@@ -35,7 +46,7 @@ class CheckBox(text: String = "") extends JCheckBox(text) with HoverDecoration w
       }
 
       else {
-        if (isHover)
+        if (isHover && isEnabled)
           g2d.setColor(InterfaceColors.CHECKBOX_BACKGROUND_UNSELECTED_HOVER)
         else
           g2d.setColor(InterfaceColors.CHECKBOX_BACKGROUND_UNSELECTED)

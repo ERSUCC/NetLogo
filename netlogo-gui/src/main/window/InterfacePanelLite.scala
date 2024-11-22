@@ -2,18 +2,18 @@
 
 package org.nlogo.window;
 
-import java.awt.{ Color, Component, Dimension, Rectangle }
+import java.awt.{ Component, Dimension, Rectangle }
 import java.awt.event.{ FocusListener, FocusEvent,
   KeyEvent, KeyAdapter, MouseAdapter, MouseEvent }
 import java.awt.image.BufferedImage
-import javax.swing.{ JLayeredPane, JPopupMenu }
+import javax.swing.JLayeredPane
 
 import org.nlogo.api.{ CompilerServices, Exceptions, RandomServices, Version }
 import org.nlogo.awt.Images
 import org.nlogo.core.{ Widget => CoreWidget, View => CoreView }
 import org.nlogo.plot.PlotManager
-import org.nlogo.swing.PopupMenuItem
-import org.nlogo.theme.InterfaceColors
+import org.nlogo.swing.{ MenuItem, PopupMenu }
+import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.nlogo.window.Events.{ LoadWidgetsEvent, OutputEvent }
 import org.nlogo.util.SysInfo
 
@@ -25,7 +25,8 @@ class InterfacePanelLite(val viewWidget: ViewWidgetInterface, compiler: Compiler
   with WidgetContainer
   with FocusListener
   with LoadWidgetsEvent.Handler
-  with OutputEvent.Handler {
+  with OutputEvent.Handler
+  with ThemeSync {
 
   // widget name -> Widget
   private val widgets: MutableMap[String, Widget] = MutableMap[String, Widget]()
@@ -36,10 +37,11 @@ class InterfacePanelLite(val viewWidget: ViewWidgetInterface, compiler: Compiler
   private var _sliderEventOnReleaseOnly: Boolean = false
 
   setOpaque(true)
-  setBackground(Color.WHITE)
   addFocusListener(this)
   addMouseListener(iPMouseListener)
   addKeyListener(getKeyAdapter)
+
+  syncTheme()
 
   // made protected so that hubnet could override it to implement message throttling. -JC 8/19/10
   protected def getKeyAdapter: KeyAdapter =
@@ -163,14 +165,12 @@ class InterfacePanelLite(val viewWidget: ViewWidgetInterface, compiler: Compiler
   ///
 
   private def doPopup(e: MouseEvent): Unit = {
-    val menu = new JPopupMenu
+    val menu = new PopupMenu
 
-    menu.setBackground(InterfaceColors.MENU_BACKGROUND)
-
-    menu.add(new PopupMenuItem(Version.version)).setEnabled(false)
-    menu.add(new PopupMenuItem(SysInfo.getOSInfoString)).setEnabled(false)
-    menu.add(new PopupMenuItem(SysInfo.getVMInfoString)).setEnabled(false)
-    menu.add(new PopupMenuItem(SysInfo.getMemoryInfoString)).setEnabled(false)
+    menu.add(new MenuItem(Version.version)).setEnabled(false)
+    menu.add(new MenuItem(SysInfo.getOSInfoString)).setEnabled(false)
+    menu.add(new MenuItem(SysInfo.getVMInfoString)).setEnabled(false)
+    menu.add(new MenuItem(SysInfo.getMemoryInfoString)).setEnabled(false)
 
     menu.show(this, e.getX, e.getY)
   }
@@ -186,6 +186,7 @@ class InterfacePanelLite(val viewWidget: ViewWidgetInterface, compiler: Compiler
     moveToFront(widget)
     widget.setLocation(x, y)
     widget.validate()
+    widget.syncTheme()
   }
 
   def hideWidget(widgetName: String): Unit = {
@@ -276,4 +277,12 @@ class InterfacePanelLite(val viewWidget: ViewWidgetInterface, compiler: Compiler
 
   def interfaceImage: BufferedImage =
     Images.paintToImage(this)
+  
+  def syncTheme() {
+    setBackground(InterfaceColors.INTERFACE_BACKGROUND)
+
+    getComponents.foreach(_ match {
+      case ts: ThemeSync => ts.syncTheme()
+    })
+  }
 }

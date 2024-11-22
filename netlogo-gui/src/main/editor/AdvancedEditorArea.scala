@@ -10,7 +10,7 @@ import javax.swing.text.EditorKit
 import org.fife.ui.rtextarea.RTextArea
 import org.fife.ui.rsyntaxtextarea.{ RSyntaxTextArea, Theme }
 
-import org.nlogo.swing.{ Menu, PopupMenuItem }
+import org.nlogo.swing.{ Menu, MenuItem, PopupMenu }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 
 class AdvancedEditorArea(val configuration: EditorConfiguration)
@@ -42,24 +42,24 @@ class AdvancedEditorArea(val configuration: EditorConfiguration)
     discardAllEdits()
   }
 
-  override def createPopupMenu(): JPopupMenu = {
-    new JPopupMenu {
+  override def createPopupMenu(): PopupMenu = {
+    new PopupMenu {
       // RSyntaxTextArea creates menu items that don't sync with the color theme,
       // so we have to convert them to the synced versions (IB 11/5/24)
       AdvancedEditorArea.super.createPopupMenu.getComponents.foreach(_ match {
         case menu: JMenu => add(new Menu(menu.getText) {
           menu.getMenuComponents.foreach(_ match {
-            case item: JMenuItem => add(new PopupMenuItem(item.getAction))
+            case item: JMenuItem => add(new MenuItem(item.getAction))
           })
-          add(new PopupMenuItem(new ToggleFoldsAction(AdvancedEditorArea.this)))
+          add(new MenuItem(new ToggleFoldsAction(AdvancedEditorArea.this)))
         })
-        case item: JMenuItem => add(new PopupMenuItem(item.getAction))
+        case item: JMenuItem => add(new MenuItem(item.getAction))
         case separator: JPopupMenu.Separator => addSeparator()
       })
 
       addSeparator()
 
-      configuration.contextActions.foreach(action => add(new PopupMenuItem(action)))
+      configuration.contextActions.foreach(action => add(new MenuItem(action)))
 
       addPopupMenuListener(new SuspendCaretPopupListener(AdvancedEditorArea.this))
 

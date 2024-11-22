@@ -10,16 +10,15 @@ import org.nlogo.api.{ Color => NlogoColor, Editable }
 import org.nlogo.awt.LineBreaker
 import org.nlogo.core.{ TextBox => CoreTextBox }
 import org.nlogo.core.I18N
+import org.nlogo.swing.Transparent
 import org.nlogo.theme.InterfaceColors
 import org.nlogo.window.SingleErrorWidget
 
 import scala.collection.JavaConverters._
 
-class NoteWidget extends SingleErrorWidget with Editable {
+class NoteWidget extends SingleErrorWidget with Transparent with Editable {
 
   type WidgetModel = CoreTextBox
-
-  setBackground(InterfaceColors.TRANSPARENT)
 
   setLayout(new FlowLayout(FlowLayout.LEFT, 0, 0))
 
@@ -98,6 +97,8 @@ class NoteWidget extends SingleErrorWidget with Editable {
   override def getMinimumSize = new Dimension(MIN_WIDTH, MIN_HEIGHT)
   override def getPreferredSize: Dimension =
     new Dimension(MIN_WIDTH.max(_width), MIN_HEIGHT.max(textLabel.getHeight + 8))
+
+  def syncTheme() {} // nothing to sync
 
   override def model: WidgetModel = {
     val b = getBoundsTuple
