@@ -5,17 +5,16 @@ package org.nlogo.app
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 
-import java.awt.{BorderLayout, Dimension, Graphics, GridBagConstraints, GridBagLayout, Insets}
-import java.awt.event.{ MouseAdapter, MouseEvent}
+import java.awt.{ BorderLayout, Dimension, Graphics, GridBagConstraints, GridBagLayout, Insets }
+import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.util.prefs.Preferences
-import javax.swing.{ JEditorPane, JLabel, JOptionPane, JPanel, JScrollPane, SwingConstants}
+import javax.swing.{ JEditorPane, JLabel, JPanel, JScrollPane, SwingConstants }
 import org.nlogo.app.infotab.InfoFormatter
 import org.nlogo.core.I18N
-import org.nlogo.swing.{HoverDecoration, OptionDialog}
-import org.nlogo.theme.{InterfaceColors, ThemeSync}
-
+import org.nlogo.swing.{ CustomOptionPane, HoverDecoration, OptionDialog }
+import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.json.simple.parser.JSONParser
-import org.json.simple.{JSONArray, JSONObject}
+import org.json.simple.{ JSONArray, JSONObject }
 
 import scala.io.Source
 
@@ -71,7 +70,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     }
   })
 
-
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
       showJsonInDialog()
@@ -93,8 +91,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     ScrollPane.getHorizontalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
     ScrollPane.getVerticalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
   }
-
-  // Method to fetch JSON content from a URL
   private def fetchJsonFromUrl(): String = {
     try {
       val source = Source.fromURL(JsonUrl)
@@ -160,15 +156,13 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
         ScrollPane.setPreferredSize(new Dimension(500, 400))
         val panel = new JPanel(new BorderLayout())
         panel.add(ScrollPane, BorderLayout.CENTER)
-        val options: Array[AnyRef] = Array(I18N.gui.get("common.buttons.ok"))
+        val options: List[String] = List(I18N.gui.get("common.buttons.ok"))
 
-        val result = JOptionPane.showOptionDialog(
-          null, panel, I18N.gui.get("dialog.interface.newsNotificationTitle"),
-          JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options(0)
-        )
+        val optionPane = new CustomOptionPane(this, I18N.gui.get("dialog.interface.newsNotificationTitle"), ScrollPane,
+          options)
+          optionPane.setSize(new Dimension(500, 500))
 
-        // Check if OK was clicked (index 0 in options array) and hide the NotificationBanner
-        if (result == 0) {
+        if (optionPane.getSelectedOption == "OK") {
           setVisible(false) // Hide NotificationBanner
           prefs.putInt("lastSeenEventId", JsonObjectList.head.eventId)
         }
@@ -180,9 +174,8 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     }
   }
 
-  // Lazily initialize the Markdown parser and renderer (can be reused for multiple calls)
-  private lazy val markdownParser = Parser.builder().build()
-  private lazy val htmlRenderer = HtmlRenderer.builder().build()
+  private val markdownParser = Parser.builder().build()
+  private val htmlRenderer = HtmlRenderer.builder().build()
 
   private def formatJsonObjectList(jsonObjectList: List[JsonObject]): String = {
     jsonObjectList.map { obj =>
