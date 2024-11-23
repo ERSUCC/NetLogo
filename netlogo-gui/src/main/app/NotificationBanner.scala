@@ -29,7 +29,7 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   private val LastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
   private var EditorPane: JEditorPane = new JEditorPane()
   // Label to display notification messages
-  private val MessageLabel = new JLabel(" " +  getJsonObjectHead.getOrElse("") + "   -  " + I18N.gui.get("dialog.interface.viewMore"))
+  private val MessageLabel = new JLabel(s" ${getJsonObjectHead.getOrElse("")}   -  ${I18N.gui.get("dialog.interface.viewMore")}")
   private val CloseButton = new CloseButton()
   CloseButton.setPreferredSize(new Dimension(50, 50))
   setVisible(isShowNeeded())
@@ -128,46 +128,49 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
 
     val prefs = Preferences.userRoot.node("/org/nlogo/NetLogo")
     try {
-      val jsonContent = fetchJsonFromUrl()
-      val formattedString = formatJsonObjectList(JsonObjectList)
-      if(!isShowNeeded()){
-        return
-      }
-      val lastSeenEventId = prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
-      if(JsonObjectList.head.eventId <= lastSeenEventId){
-        return
-      }
-      val html = InfoFormatter.toInnerHtml(formattedString)
+      if (isShowNeeded()) {
+        val jsonContent = fetchJsonFromUrl()
+        val formattedString = formatJsonObjectList(JsonObjectList)
 
-      if (!jsonContent.trim.isEmpty) {
-        EditorPane = new JEditorPane {
+        val lastSeenEventId = prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
+        if (JsonObjectList.head.eventId > lastSeenEventId) {
 
-          setDragEnabled(false)
-          setEditable(false)
-          setContentType("text/html")
-          setOpaque(true)
-          setBackground(InterfaceColors.CODE_BACKGROUND)
-          setForeground(InterfaceColors.DEFAULT_COLOR) //Set the font color
-          setText(html)
-          setCaretPosition(0)
+
+          val html = InfoFormatter.toInnerHtml(formattedString)
+
+          if (!jsonContent.trim.isEmpty) {
+            EditorPane = new JEditorPane {
+
+              setDragEnabled(false)
+              setEditable(false)
+              setContentType("text/html")
+              setOpaque(true)
+              setBackground(InterfaceColors.CODE_BACKGROUND)
+              setForeground(InterfaceColors.DEFAULT_COLOR) //Set the font color
+              setText(html)
+              setCaretPosition(0)
+            }
+
+            ScrollPane = new JScrollPane(EditorPane)
+            ScrollPane.setPreferredSize(new Dimension(500, 400))
+            val panel = new JPanel(new BorderLayout())
+            panel.add(ScrollPane, BorderLayout.CENTER)
+            val options: List[String] = List(I18N.gui.get("common.buttons.ok"))
+
+            val optionPane = new CustomOptionPane(this, I18N.gui.get("dialog.interface.newsNotificationTitle"), ScrollPane,
+              options)
+            optionPane.setSize(new Dimension(500, 500))
+
+            if (optionPane.getSelectedOption == "OK") {
+              setVisible(false) // Hide NotificationBanner
+              prefs.putInt("lastSeenEventId", JsonObjectList.head.eventId)
+            }
+          }
         }
-
-        ScrollPane = new JScrollPane(EditorPane)
-        ScrollPane.setPreferredSize(new Dimension(500, 400))
-        val panel = new JPanel(new BorderLayout())
-        panel.add(ScrollPane, BorderLayout.CENTER)
-        val options: List[String] = List(I18N.gui.get("common.buttons.ok"))
-
-        val optionPane = new CustomOptionPane(this, I18N.gui.get("dialog.interface.newsNotificationTitle"), ScrollPane,
-          options)
-          optionPane.setSize(new Dimension(500, 500))
-
-        if (optionPane.getSelectedOption == "OK") {
-          setVisible(false) // Hide NotificationBanner
-          prefs.putInt("lastSeenEventId", JsonObjectList.head.eventId)
-        }
       }
-    } catch {
+
+    }
+  catch {
       case e: Exception =>{
         OptionDialog.showCustom(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, null)
       }
