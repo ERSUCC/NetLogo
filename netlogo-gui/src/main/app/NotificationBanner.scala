@@ -11,7 +11,7 @@ import java.util.prefs.Preferences
 import javax.swing.{ JEditorPane, JLabel, JPanel, JScrollPane, SwingConstants }
 import org.nlogo.app.infotab.InfoFormatter
 import org.nlogo.core.I18N
-import org.nlogo.swing.{ CustomOptionPane, HoverDecoration, OptionDialog }
+import org.nlogo.swing.{ CustomOptionPane, HoverDecoration, OptionPane }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.json.simple.parser.JSONParser
 import org.json.simple.{ JSONArray, JSONObject }
@@ -99,6 +99,8 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
       content
     } catch {
       case e: Exception =>
+        // NO-OP; likely the file could not be reached and we don't want to disable the app
+        // Also possible the network connection failed or the URL has changed. This ensures the app can start and operate
         ""
     }
   }
@@ -119,7 +121,7 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
         val date = Option(jsonObject.get("date")).map(_.toString).getOrElse("")
         JsonObject(eventId, date, title, fullText)
       }
-    }.toList.sortBy(_.eventId)(Ordering[Int].reverse)
+    }.toList.sortBy(_.eventId).reverse
 
   }
 
@@ -172,7 +174,7 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     }
   catch {
       case e: Exception =>{
-        OptionDialog.showCustom(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, null)
+        new OptionPane(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, null)
       }
     }
   }
@@ -195,7 +197,6 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     val jsonContent = fetchJsonFromUrl()
     JsonObjectList = parseJsonToList(jsonContent)
 
-    // Return the title of the first item if JsonObjectList is not null and has elements
     JsonObjectList match {
       case head :: xs =>
         Option(head.title)
