@@ -197,13 +197,11 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
 
     // Return the title of the first item if JsonObjectList is not null and has elements
     JsonObjectList match {
-      case Nil =>
-        println("JsonObjectList is empty or Nil; hiding NotificationBanner.")
+      case head :: xs =>
+        Option(head.title)
+      case _ =>
         this.setVisible(false) // Hide the NotificationBanner panel
         None
-      case list =>
-        this.setVisible(true)
-        list.headOption.map(_.title)
     }
   }
 
