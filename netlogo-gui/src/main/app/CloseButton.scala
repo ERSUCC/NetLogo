@@ -1,14 +1,10 @@
 package org.nlogo.app
 
-import org.nlogo.swing.Utils
-import org.nlogo.theme.InterfaceColors
-
+import org.nlogo.swing.{Utils, Transparent}
 import java.awt.{Dimension, Graphics}
 import javax.swing.JPanel
 
-private class CloseButton extends JPanel {
-  setOpaque(false)
-  setBackground(InterfaceColors.TRANSPARENT)
+private class CloseButton extends JPanel with Transparent {
 
   override def getPreferredSize: Dimension =
     new Dimension(8, 8)

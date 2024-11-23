@@ -21,10 +21,10 @@ import scala.io.Source
 case class JsonObject(eventId: Int, date: String, title: String, fullText: String)
 
 class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
-  private var JsonObjectList: List[JsonObject] = List()
+  private var JsonObjectList: Seq[JsonObject] = List()
   private val JsonUrl = "https://ccl.northwestern.edu/netlogo/announce-test.json"
 
-  JsonObjectList = parseJsonToList(fetchJsonFromUrl())
+  JsonObjectList = parseJsonToSeq(fetchJsonFromUrl())
   private var ScrollPane = new JScrollPane()
   private val LastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
   private var EditorPane: JEditorPane = new JEditorPane()
@@ -105,8 +105,8 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
     }
   }
 
-  // Method to parse JSON content to a list of JsonObject instances
-  private def parseJsonToList(jsonContent: String): List[JsonObject] = {
+  // Method to parse JSON content to a Seq of JsonObject instances
+  private def parseJsonToSeq(jsonContent: String): Seq[JsonObject] = {
     if(jsonContent.isEmpty){
       return Nil
     }
@@ -182,7 +182,7 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   private val markdownParser = Parser.builder().build()
   private val htmlRenderer = HtmlRenderer.builder().build()
 
-  private def formatJsonObjectList(jsonObjectList: List[JsonObject]): String = {
+  private def formatJsonObjectList(jsonObjectList: Seq[JsonObject]): String = {
     jsonObjectList.map { obj =>
       // Convert fullText from Markdown to HTML
       val fullTextHtml = htmlRenderer.render(markdownParser.parse(obj.fullText))
@@ -195,7 +195,7 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
 
   private def getJsonObjectHead: Option[String] = {
     val jsonContent = fetchJsonFromUrl()
-    JsonObjectList = parseJsonToList(jsonContent)
+    JsonObjectList = parseJsonToSeq(jsonContent)
 
     JsonObjectList match {
       case head :: xs =>
