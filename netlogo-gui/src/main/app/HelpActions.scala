@@ -10,9 +10,9 @@ import javax.swing.{ Action, AbstractAction }
 
 import org.nlogo.core.I18N
 import org.nlogo.api.Version
-import org.nlogo.swing.{ BrowserLauncher, UserAction }
-import BrowserLauncher.docPath
-import UserAction._
+import org.nlogo.swing.{ BrowserLauncher, UserAction },
+  BrowserLauncher.docPath,
+  UserAction._
 import org.nlogo.theme.ThemeSync
 
 class LocalBrowseAction(name: String, path: Path)
