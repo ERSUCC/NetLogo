@@ -11,7 +11,7 @@ import java.util.prefs.Preferences
 import javax.swing.{ JEditorPane, JLabel, JPanel, JScrollPane, SwingConstants }
 import org.nlogo.app.infotab.InfoFormatter
 import org.nlogo.core.I18N
-import org.nlogo.swing.{ CustomOptionPane, HoverDecoration, OptionPane }
+import org.nlogo.swing.{ CloseButton, CustomOptionPane, HoverDecoration, OptionPane }
 import org.nlogo.theme.{ InterfaceColors, ThemeSync }
 import org.json.simple.parser.JSONParser
 import org.json.simple.{ JSONArray, JSONObject }
@@ -169,7 +169,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
           }
         }
       }
-      }
+    }
 
 
 
