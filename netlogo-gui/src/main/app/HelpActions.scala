@@ -10,9 +10,9 @@ import javax.swing.{ Action, AbstractAction }
 
 import org.nlogo.core.I18N
 import org.nlogo.api.Version
-import org.nlogo.swing.{ BrowserLauncher, UserAction },
-  BrowserLauncher.docPath,
-  UserAction._
+import org.nlogo.swing.{ BrowserLauncher, UserAction }
+import BrowserLauncher.docPath
+import UserAction._
 import org.nlogo.theme.ThemeSync
 
 class LocalBrowseAction(name: String, path: Path)
@@ -27,6 +27,19 @@ with MenuAction {
       case _ => null
     }
     BrowserLauncher.openPath(launchComponent, path, "")
+  }
+}
+
+class WhatsNewAction(name: String)
+  extends AbstractAction(name)
+    with MenuAction {
+  category = HelpCategory
+  group    = HelpWebGroup
+
+
+  override def actionPerformed(e: ActionEvent): Unit = {
+    val panel = new NotificationBanner()
+    panel.showJsonInDialog(true)
   }
 }
 
@@ -58,6 +71,7 @@ object HelpActions {
       new URI("http://groups.google.com/d/forum/netlogo-users")),
     new RemoteBrowseAction(I18N.gui.get("menu.help.introToABM"),
       new URI("https://mitpress.mit.edu/books/introduction-agent-based-modeling")),
+    new WhatsNewAction(I18N.gui.get("menu.help.whatsNew")),
     new RemoteBrowseAction(I18N.gui.get("menu.help.donate"),
       new URI("http://ccl.northwestern.edu/netlogo/giving.shtml")) {
       putValue(ActionGroupKey, HelpAboutGroup)

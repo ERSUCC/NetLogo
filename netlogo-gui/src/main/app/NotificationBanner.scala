@@ -20,7 +20,7 @@ import scala.io.Source
 
 case class JsonObject(eventId: Int, date: String, title: String, fullText: String)
 
-class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
+class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
   private var JsonObjectList: Seq[JsonObject] = List()
   private val JsonUrl = "https://ccl.northwestern.edu/netlogo/announce-test.json"
 
@@ -72,7 +72,7 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
 
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
-      showJsonInDialog()
+      showJsonInDialog(true)
     }
   })
 
@@ -126,17 +126,16 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
   }
 
   // Method to show JSON content in a dialog
-  private def showJsonInDialog(): Unit = {
+  //alwaysShow allows accessing this from the help menu forces it to be shown, even if it has been viewed before
+  def showJsonInDialog(alwaysShow:Boolean): Unit = {
 
     val prefs = Preferences.userRoot.node("/org/nlogo/NetLogo")
-    try {
-      if (isShowNeeded()) {
+    try {if (isShowNeeded() || alwaysShow) {
         val jsonContent = fetchJsonFromUrl()
         val formattedString = formatJsonObjectList(JsonObjectList)
 
         val lastSeenEventId = prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
-        if (JsonObjectList.head.eventId > lastSeenEventId) {
-
+        if (JsonObjectList.head.eventId > lastSeenEventId || alwaysShow) {
 
           val html = InfoFormatter.toInnerHtml(formattedString)
 
@@ -170,8 +169,10 @@ class NotificationBanner() extends JPanel with ThemeSync with HoverDecoration {
           }
         }
       }
+      }
 
-    }
+
+
   catch {
       case e: Exception =>{
         new OptionPane(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, null)
