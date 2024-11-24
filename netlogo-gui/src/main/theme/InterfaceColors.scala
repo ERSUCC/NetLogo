@@ -250,8 +250,7 @@ object InterfaceColors {
 
   def ANNOUNCEMENTS_BANNER_BACKGROUND =
     theme match {
-      case "classic" => CLASSIC_LIGHT_GREEN
-      case "light" => LIGHT_GRAY
+      case "classic" | "light" => CLASSIC_LIGHT_GREEN
       case "dark" => DARK_GRAY
     }
 
