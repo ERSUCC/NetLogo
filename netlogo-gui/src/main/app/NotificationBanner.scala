@@ -164,7 +164,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
               options)
             optionPane.setSize(new Dimension(500, 500))
 
-            if (optionPane.getSelectedOption == "OK") {
+            if (optionPane.getSelectedIndex == 0) {
               setVisible(false) // Hide NotificationBanner
               prefs.putInt("lastSeenEventId", jsonObjectList.head.eventId)
             }
