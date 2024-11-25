@@ -27,7 +27,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
   jsonObjectList = parseJsonToSeq(fetchJsonFromUrl())
   private var scrollPane = new JScrollPane()
   private val LastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
-  private var editorPane: JEditorPane = new JEditorPane()
+
   // Label to display notification messages
   private val messageLabel = new JLabel(s" ${getJsonObjectHead.getOrElse("")}   -  ${I18N.gui.get("dialog.interface.viewMore")}")
   private val closeButton = new CloseButton()
@@ -107,7 +107,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
 
   // Method to parse JSON content to a Seq of JsonObject instances
   private def parseJsonToSeq(jsonContent: String): Seq[JsonObject] = {
-    if(jsonContent.isEmpty){
+    if(jsonContent.isEmpty) {
       return Nil
     }
 
@@ -133,7 +133,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
     try {
       if (isShowNeeded() || alwaysShow) {
 
-        val jsonContent = fetchJsonFromUrl()
+        val jsonContent = fetchJsonFromUrl
         val formattedString = formatJsonObjectList(jsonObjectList)
 
         val lastSeenEventId = prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
@@ -142,8 +142,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
           val html = InfoFormatter.toInnerHtml(formattedString)
 
           if (!jsonContent.trim.isEmpty) {
-            editorPane = new JEditorPane {
-
+            val editorPane: JEditorPane = new JEditorPane() {
               setDragEnabled(false)
               setEditable(false)
               setContentType("text/html")
@@ -172,13 +171,9 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
         }
       }
     }
-
-
-
-  catch {
-      case e: Exception =>{
-        new OptionPane(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, null)
-      }
+    catch {
+        case e: Exception =>
+          new OptionPane(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, List(I18N.gui.get("common.buttons.ok")))
     }
   }
 
