@@ -21,18 +21,28 @@ import scala.io.Source
 case class JsonObject(eventId: Int, date: String, title: String, fullText: String)
 
 class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
-  private var jsonObjectList: Seq[JsonObject] = List()
   private val JsonUrl = "https://ccl.northwestern.edu/netlogo/announce-test.json"
 
-  jsonObjectList = parseJsonToSeq(fetchJsonFromUrl())
-  private var scrollPane = new JScrollPane()
-  private val LastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
+  private val jsonObjectList: Seq[JsonObject] = parseJsonToSeq(fetchJsonFromUrl())
 
+  private val LastSeenEventIdKey: String = "lastSeenEventId" // The key for the most recently seen event-id
+  private val editorPane: JEditorPane = new JEditorPane {
+    setDragEnabled(false)
+    setEditable(false)
+    setContentType("text/html")
+    setOpaque(true)
+    setBackground(InterfaceColors.CODE_BACKGROUND)
+    setForeground(InterfaceColors.DEFAULT_COLOR) // Set the font color
+  }
+
+  private val scrollPane: JScrollPane = new JScrollPane(editorPane) {
+    setPreferredSize(new Dimension(500, 400))
+  }
   // Label to display notification messages
   private val messageLabel = new JLabel(s" ${getJsonObjectHead.getOrElse("")}   -  ${I18N.gui.get("dialog.interface.viewMore")}")
   private val closeButton = new CloseButton()
   closeButton.setPreferredSize(new Dimension(50, 50))
-  setVisible(isShowNeeded())
+  setVisible(isShowNeeded)
   setPreferredSize(new Dimension(super.getPreferredSize.width, 40))
 
   setLayout(new GridBagLayout())
@@ -90,6 +100,8 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
     closeButton.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
     scrollPane.getHorizontalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
     scrollPane.getVerticalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
+    editorPane.setBackground(InterfaceColors.CODE_BACKGROUND)
+    editorPane.setForeground(InterfaceColors.DEFAULT_COLOR) //Set the font color
   }
   private def fetchJsonFromUrl(): String = {
     try {
@@ -131,7 +143,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
 
     val prefs = Preferences.userRoot.node("/org/nlogo/NetLogo")
     try {
-      if (isShowNeeded() || alwaysShow) {
+      if (isShowNeeded || alwaysShow) {
 
         val jsonContent = fetchJsonFromUrl
         val formattedString = formatJsonObjectList(jsonObjectList)
@@ -142,19 +154,8 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
           val html = InfoFormatter.toInnerHtml(formattedString)
 
           if (!jsonContent.trim.isEmpty) {
-            val editorPane: JEditorPane = new JEditorPane() {
-              setDragEnabled(false)
-              setEditable(false)
-              setContentType("text/html")
-              setOpaque(true)
-              setBackground(InterfaceColors.CODE_BACKGROUND)
-              setForeground(InterfaceColors.DEFAULT_COLOR) //Set the font color
-              setText(html)
-              setCaretPosition(0)
-            }
-
-            scrollPane = new JScrollPane(editorPane)
-            scrollPane.setPreferredSize(new Dimension(500, 400))
+            editorPane.setText(html)
+            editorPane.setCaretPosition(0)
             val panel = new JPanel(new BorderLayout())
             panel.add(scrollPane, BorderLayout.CENTER)
             val options: List[String] = List(I18N.gui.get("common.buttons.ok"))
@@ -173,15 +174,15 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
     }
     catch {
         case e: Exception =>
-          new OptionPane(this, I18N.gui.get("error.dialog.unknown"), e.getMessage, List(I18N.gui.get("common.buttons.ok")))
+          new OptionPane(this, I18N.gui.get("error.dialog.connection"), I18N.gui.get("error.dialog.unableToConnect"), List(I18N.gui.get("common.buttons.ok")))
     }
   }
 
   private val markdownParser = Parser.builder().build()
   private val htmlRenderer = HtmlRenderer.builder().build()
 
-  private def formatJsonObjectList(jsonObjectList: Seq[JsonObject]): String = {
-    jsonObjectList.map { obj =>
+  private def formatJsonObjectList(jsonObjectListArg: Seq[JsonObject]): String = {
+    jsonObjectListArg.map { obj =>
       // Convert fullText from Markdown to HTML
       val fullTextHtml = htmlRenderer.render(markdownParser.parse(obj.fullText))
 
@@ -192,8 +193,6 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
   }
 
   private def getJsonObjectHead: Option[String] = {
-    val jsonContent = fetchJsonFromUrl()
-    jsonObjectList = parseJsonToSeq(jsonContent)
 
     jsonObjectList match {
       case head :: xs =>
@@ -204,7 +203,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
     }
   }
 
-  private def isShowNeeded(): Boolean = {
+  private def isShowNeeded: Boolean = {
     val Prefs = Preferences.userRoot.node("/org/nlogo/NetLogo")
     val LastSeenEventId = Prefs.getInt(LastSeenEventIdKey, -1); // Returns -1 if "event-id" is not found
     //return true if jsonObjectList is non-empty and eventId of the first element is> lastSeenEventId; otherwise return false
