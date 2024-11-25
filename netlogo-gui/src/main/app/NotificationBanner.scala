@@ -120,7 +120,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
   // Method to parse JSON content to a Seq of JsonObject instances
   private def parseJsonToSeq(jsonContent: String): Seq[JsonObject] = {
     if(jsonContent.isEmpty) {
-      return Nil
+      return Seq()
     }
 
     val parser = new JSONParser()
