@@ -83,6 +83,7 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
   addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
       showJsonInDialog(true)
+      setVisible(false) //hide once clicked.
     }
   })
 
