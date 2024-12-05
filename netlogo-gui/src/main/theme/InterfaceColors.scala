@@ -39,6 +39,8 @@ object InterfaceColors {
   private val DARK_BLUE_GRAY_2 = new Color(35, 35, 44)
   private val LIGHT_RED = new Color(251, 96, 85)
   private val ALMOST_BLACK = new Color(22, 22, 22)
+  private val PURPLE = new Color(60, 0, 98)
+
 
   val TRANSPARENT = new Color(0, 0, 0, 0)
 
@@ -250,8 +252,7 @@ object InterfaceColors {
 
   def ANNOUNCEMENTS_BANNER_BACKGROUND =
     theme match {
-      case "classic" | "light" => CLASSIC_LIGHT_GREEN
-      case "dark" => DARK_GRAY
+      case "classic" | "light" | "dark" => PURPLE
     }
 
   def ANNOUNCEMENTS_BANNER_BACKGROUND_HOVER =
@@ -263,7 +264,7 @@ object InterfaceColors {
 
   def ANNOUNCEMENTS_BANNER_TEXT =
     theme match {
-      case "classic" | "light" => Color.BLACK
+      case "classic" | "light" => Color.WHITE
       case "dark" => Color.WHITE
     }
 

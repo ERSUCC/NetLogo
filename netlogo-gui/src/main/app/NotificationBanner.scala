@@ -5,7 +5,7 @@ package org.nlogo.app
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 
-import java.awt.{ BorderLayout, Dimension, Graphics, GridBagConstraints, GridBagLayout, Insets }
+import java.awt.{ BorderLayout, Dimension, GridBagConstraints, GridBagLayout, Insets }
 import java.awt.event.{ MouseAdapter, MouseEvent }
 import java.util.prefs.Preferences
 import javax.swing.{ JEditorPane, JLabel, JPanel, JScrollPane, SwingConstants }
@@ -38,8 +38,9 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
   private val scrollPane: JScrollPane = new JScrollPane(editorPane) {
     setPreferredSize(new Dimension(500, 400))
   }
-  // Label to display notification messages
-  private val messageLabel = new JLabel(s" ${getJsonObjectHead.getOrElse("")}   -  ${I18N.gui.get("dialog.interface.viewMore")}")
+  private val messageLabel = new JLabel(s" ${getJsonObjectHead.getOrElse("")}")
+
+  private val viewMoreLabel = new JLabel(s"<html><u>${I18N.gui.get("dialog.interface.viewMore")}</u></html>")
   private val closeButton = new CloseButton()
   closeButton.setPreferredSize(new Dimension(50, 50))
   setVisible(isShowNeeded)
@@ -58,20 +59,27 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
 
   add(messageLabel, labelConstraints)
 
-  // Configure constraints for closeButton
-  val buttonConstraints = new GridBagConstraints()
-  buttonConstraints.gridx = 1
-  buttonConstraints.gridy = 0 // Same row as messageLabel
-  buttonConstraints.weightx = 0.0 // Do not take extra horizontal space
-  buttonConstraints.anchor = GridBagConstraints.EAST
-  buttonConstraints.fill = GridBagConstraints.NONE
-  buttonConstraints.insets = new Insets(0, 5, 0, 5)
+  // Configure constraints for viewMoreLabel
+  val viewMoreConstraints = new GridBagConstraints()
+  viewMoreConstraints.gridx = 1
+  viewMoreConstraints.gridy = 0 // Same row as messageLabel
+  viewMoreConstraints.weightx = 0.0 // Do not take extra horizontal space
+  viewMoreConstraints.anchor = GridBagConstraints.EAST
+  viewMoreConstraints.insets = new Insets(0, 5, 0, 5)
 
+  add(viewMoreLabel, viewMoreConstraints)
+
+  // Configure constraints for closeButton
+  val closeButtonConstraints = new GridBagConstraints()
+  closeButtonConstraints.gridx = 2
+  closeButtonConstraints.gridy = 0 // Same row as messageLabel
+  closeButtonConstraints.weightx = 0.0 // Do not take extra horizontal space
+  closeButtonConstraints.anchor = GridBagConstraints.EAST
+  closeButtonConstraints.insets = new Insets(0, 5, 0, 5)
+
+  add(closeButton, closeButtonConstraints)
 
   messageLabel.setHorizontalAlignment(SwingConstants.LEFT)
-
-  add(closeButton, buttonConstraints)
-
   closeButton.addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
       if (e.getButton == MouseEvent.BUTTON1) {
@@ -80,25 +88,18 @@ class NotificationBanner extends JPanel with ThemeSync with HoverDecoration {
     }
   })
 
-  addMouseListener(new MouseAdapter {
+  viewMoreLabel.addMouseListener(new MouseAdapter {
     override def mouseClicked(e: MouseEvent): Unit = {
       showJsonInDialog(true)
       setVisible(false) //hide once clicked.
     }
   })
-
-  override def paintComponent(g: Graphics) {
-    if (isHover)
-      setBackground(InterfaceColors.ANNOUNCEMENTS_BANNER_BACKGROUND_HOVER)
-    else
-      setBackground(InterfaceColors.ANNOUNCEMENTS_BANNER_BACKGROUND)
-
-    super.paintComponent(g)
-  }
+  
   def syncTheme(): Unit = {
     setBackground(InterfaceColors.ANNOUNCEMENTS_BANNER_BACKGROUND)
     messageLabel.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
     closeButton.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
+    viewMoreLabel.setForeground(InterfaceColors.ANNOUNCEMENTS_BANNER_TEXT)
     scrollPane.getHorizontalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
     scrollPane.getVerticalScrollBar.setBackground(InterfaceColors.DIALOG_BACKGROUND)
     editorPane.setBackground(InterfaceColors.CODE_BACKGROUND)
