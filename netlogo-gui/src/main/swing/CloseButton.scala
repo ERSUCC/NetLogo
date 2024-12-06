@@ -6,7 +6,6 @@ import java.awt.{ Dimension, Graphics }
 import javax.swing.JPanel
 
 class CloseButton extends JPanel with Transparent {
-
   override def getPreferredSize: Dimension =
     new Dimension(8, 8)
 

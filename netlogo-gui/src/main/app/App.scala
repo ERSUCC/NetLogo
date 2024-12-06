@@ -818,6 +818,7 @@ class App extends
     openColorDialog.syncTheme()
     openRGBAColorDialog.syncTheme()
     openLibrariesDialog.syncTheme()
+    notificationBanner.syncTheme()
 
     workspace.hubNetManager match {
       case Some(manager: ThemeSync) => manager.syncTheme()
